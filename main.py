@@ -1,4 +1,4 @@
-from pyautogui import click, locateOnScreen, moveTo, FAILSAFE, press, write
+from pyautogui import click, locateOnScreen, moveTo, FAILSAFE, press, write, keyDown, keyUp
 from time import sleep
 
 # Safety
@@ -6,16 +6,36 @@ FAILSAFE = True  # Move mouse to corner to stop
 
 def main():
     
+    ### Parameters ###
+    # Modify these for your preferences
+    
     # True = minting, False = depositting
     is_minting = True
+    
+    # Rarity of the NFT to mint
+    # [all, uncommon, grand, rare, arcane, mythic, legendary]
+    rarity = "all"
+    
+    ###################################################
+    
+    rarity_mapping = {
+        "all": 0,
+        "uncommon": 2,
+        "grand": 3,
+        "rare": 4,
+        "arcane": 5,
+        "mythic": 6,
+        "legendary": 7,
+    }
+    
+    rarity_index = rarity_mapping[rarity]
+    minting_url = f"https://ravenquest.io/en/myaccount/nft-inventory?assets=ravencard&rarity={rarity_index}&name="
+
     if is_minting:
         print("Starting ravenquest minting script...")
         print("--------------------------------------")
-    else:
-        print("Starting ravenquest depositting script...")
-        print("--------------------------------------")
-    
-    if is_minting:
+        
+        retries = 0
         while True:
             try:
                 menu = locateOnScreen("images/menu.png", confidence=0.95)
@@ -44,14 +64,28 @@ def main():
                 sleep(0.1)
                 press("backspace")
                 sleep(0.1)
-                write("https://ravenquest.io/en/myaccount/nft-inventory?assets=ravencard&rarity=2&name=")
+                write(minting_url)
                 sleep(0.1)
                 press("enter")
                 sleep(2.5)
             except Exception as e:
-                print(e)
-                break
+                if retries < 3:
+                    retries += 1
+                    keyDown("ctrl")
+                    press("L")
+                    keyUp("ctrl")
+                    sleep(0.1)
+                    press("backspace")
+                    sleep(0.1)
+                    write(minting_url)
+                    sleep(0.1)
+                    press("enter")
+                    sleep(2.5)
+                else:
+                    break
     else:
+        print("Starting ravenquest depositting script...")
+        print("--------------------------------------")
         while True:
             try:
                 location = locateOnScreen("images/deposit.png", confidence=0.97)
